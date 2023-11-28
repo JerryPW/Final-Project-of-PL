@@ -26,8 +26,9 @@ struct Block
 {
     command program[100];
     // command end_info;
-    Block *parent;
+    vector <Block*> parent;
     int com_num;
+    bool checked = false;
 };
 
 struct Program
@@ -36,6 +37,35 @@ struct Program
     Block program_block[100];
     int block_num;
 };
+
+
+void record_block_parents(struct Program* prog)
+{
+    int i = 0;
+    while (i <= prog->block_num)
+    {
+        Block current_block = prog->program_block[i];
+        command end_info = current_block.program[current_block.com_num];
+        istringstream iss(end_info.com_str);
+        string token;
+        unordered_set <int> destination;
+        while (iss >> token)
+        {
+            if (token == "jmp")
+            {
+                iss >> token;
+                int dest = stoi(token);
+                destination.insert(dest);
+            }
+        }
+        
+        for (int dest : destination)
+            prog->program_block[dest].parent.push_back(&prog->program_block[i]);
+        
+        i++;
+    }
+}
+
 
 void use_def_calculate(command* com) {
     unordered_set<int> useSet;
@@ -105,9 +135,6 @@ void use_def_calculate(command* com) {
 }
 
 
-
-
-
 void build_block(struct Program* prog)
 {
     int i = 0; // Program
@@ -138,35 +165,30 @@ void build_block(struct Program* prog)
 int main()
 {
     
-//    Program *prog;
-//
-//    ifstream ifs;
-//    ifs.open("/Users/lihao/Documents/Programming_Language/寄存器分配/exp1.txt", ios::in);
-//
-//    if (ifs.is_open())
-//    {
-//        string line;
-//        int i = 0;
-//        while (getline(ifs, line))
-//        {
-//            prog->program[i] = line;
-//            i++;
-//        }
-//        prog->program[i] = "EOF";
-//    }
-//    else
-//        cout << "failed" << endl;
+    Program prog;
+
+    ifstream ifs;
+    ifs.open("/Users/lihao/Documents/Programming_Language/寄存器分配/exp1.txt", ios::in);
+
+    if (ifs.is_open())
+    {
+        string line;
+        int i = 0;
+        while (getline(ifs, line))
+        {
+            prog.program[i] = line;
+            i++;
+        }
+        prog.program[i] = "EOF";
+    }
+    else
+        cout << "failed" << endl;
     
-    command myCommand;
-    myCommand.com_str = "#2 = #2 + 1";
-    use_def_calculate(&myCommand);
-    cout << "use: ";
-    for (int var : myCommand.use)
-        cout << "#" << var << ' ' ;
-    cout << endl;
-    cout << "def: ";
-    for (int var : myCommand.def)
-        cout << "#" << var << ' ';
-    cout << endl;
+    
+    build_block(&prog);
+    record_block_parents(&prog);
+    
+    
+    
 }
 
