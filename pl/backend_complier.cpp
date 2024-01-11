@@ -479,6 +479,21 @@ bool check_move(string cmd)
     return true;
 
 }
+
+vector<int> to;
+
+int find(int x)
+{
+    if(x!=to[x])
+        to[x]=find(to[x]);
+    return to[x];
+}
+
+void combine(int x,int y)
+{
+    x=find(x),y=find(y),to[y]=x;
+}
+
 struct remove_stk
 {
     int id;
@@ -557,6 +572,7 @@ bool allocate(int rg_cnt)
             if (deg_cnt < rg_cnt)
             {
                 //修改v1和v2的邻居
+                combine(move_list[cur].v1,move_list[cur].v2);
                 cout<<"Coalesce: #"<<move_list[cur].v1<<" <= #"<<move_list[cur].v2<<endl;
                 for (i = 0; i < var_cnt; ++ i)
                     if(i!= move_list[cur].v2 && interference_graph[i * var_cnt + move_list[cur].v2])
@@ -583,6 +599,7 @@ bool allocate(int rg_cnt)
             if (!flag)
             {
                 //修改v1和v2的邻居
+                combine(move_list[cur].v1,move_list[cur].v2);
                 cout<<"Coalesce: #"<<move_list[cur].v1<<" => #"<<move_list[cur].v2<<endl;
                 for (i = 0; i < var_cnt; ++ i)
                     if(i!= move_list[cur].v1 && interference_graph[i * var_cnt + move_list[cur].v1])
@@ -608,6 +625,7 @@ bool allocate(int rg_cnt)
             if (!flag)
             {
                 //修改v1和v2的邻居
+                combine(move_list[cur].v1,move_list[cur].v2);
                 cout<<"Coalesce: #"<<move_list[cur].v1<<" <= #"<<move_list[cur].v2<<endl;
                 for (i = 0; i < var_cnt; ++ i)
                     if(i!= move_list[cur].v2 && interference_graph[i * var_cnt + move_list[cur].v2])
@@ -685,16 +703,18 @@ bool allocate(int rg_cnt)
 
     }
     //根据var_rg的信息即可知道哪些变量是真spill
-    for(i = 0; i < move_list.size(); ++ i)
+    for (i = 0; i < var_cnt; ++ i)
     {
-        if(move_list[i].coalesced)
-        {
-            if(var_rg[move_list[i].v1] != - 1)
-                var_rg[move_list[i].v2] = var_rg[move_list[i].v1];
-            else    
-                var_rg[move_list[i].v1] = var_rg[move_list[i].v2];
-        }
+        // cout<<i<<" "<<find(i)<<endl;
+        if(var_rg[find(i)]==-1)
+            var_rg[find(i)]=var_rg[i];
     }
+    for (i = 0; i < var_cnt; ++ i)
+    {
+        if(var_rg[i]==-1)
+            var_rg[i]=var_rg[find(i)];
+    }
+    
     for(i = 0; i < var_cnt; ++ i)
     {
         if(var_rg[i]!=-1)
@@ -883,10 +903,10 @@ int main()
 
         i++;
     }  
-    int ok = false;
+    bool ok = false;
+    bool first=true;
     do
     { 
-
         
         cout << "The RAX number is: " << RAX_NUMBER << endl;
 
@@ -907,30 +927,30 @@ int main()
         int end_com_id = prog->program_block[end_block_id].com_num;
         liveness_gen(prog, end_block_id, end_com_id);
 
-        for(int block_id = 0; block_id < prog->block_num; block_id++) {
-            cout<<"Block "<<block_id<<":"<<endl;
-            for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
-                command myCommand = prog->program_block[block_id].program[com_id];
-                cout<<myCommand.com_str<<endl;
+        // for(int block_id = 0; block_id < prog->block_num; block_id++) {
+        //     cout<<"Block "<<block_id<<":"<<endl;
+        //     for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
+        //         command myCommand = prog->program_block[block_id].program[com_id];
+        //         cout<<myCommand.com_str<<endl;
 
-                cout << "def: ";
-                for (int var : myCommand.def)
-                {
-                    cout << "#" << var << ' ';
-                }
-                cout << "use: ";
-                for (int var : myCommand.use)
-                {
-                    cout << "#" << var << ' ';
-                }
-                cout << "liveness: ";
-                for (int var : myCommand.liveness)
-                {
-                    cout << "#" << var << ' ';
-                }
-                cout << endl << endl;
-            }
-        }
+        //         cout << "def: ";
+        //         for (int var : myCommand.def)
+        //         {
+        //             cout << "#" << var << ' ';
+        //         }
+        //         cout << "use: ";
+        //         for (int var : myCommand.use)
+        //         {
+        //             cout << "#" << var << ' ';
+        //         }
+        //         cout << "liveness: ";
+        //         for (int var : myCommand.liveness)
+        //         {
+        //             cout << "#" << var << ' ';
+        //         }
+        //         cout << endl << endl;
+        //     }
+        // }
 
         var_cnt = 0;
 
@@ -966,8 +986,15 @@ int main()
             }
         }
         var_cnt ++;
-        for(int i = 0; i < var_cnt; ++i)
-            spilled.push_back(0);
+        if(first)
+        {
+            for(int i = 0; i < var_cnt; ++i)
+            {
+                spilled.push_back(0);
+                to.push_back(i);
+            }
+            first=false;
+        }
         // cout<<var_cnt<<endl;
         interference_graph = new bool[var_cnt * var_cnt];
         degree = new int[var_cnt];
@@ -992,7 +1019,7 @@ int main()
             }
         }
         del_useless_move();
-        int rg_cnt = 2;
+        int rg_cnt = 7;
         rg_choices = new bool[rg_cnt];
 
         ok = allocate(rg_cnt);
@@ -1003,8 +1030,11 @@ int main()
             bool possible = false;
             for(int vv = 0; vv<var_cnt; ++vv)
             {
-                if(spilled[vv] = 0)
+                if(spilled[vv] == 0)
+                {
                     possible=true;
+                    break;
+                }
             }
             if (!possible)
             {
@@ -1014,6 +1044,7 @@ int main()
             wrong.clear();
             for(int vv = 0; vv<var_cnt; ++vv)
             {
+                to[vv]=vv;
                 if(var_rg[vv]!=-1)
                     wrong.push_back(0);
                 else
