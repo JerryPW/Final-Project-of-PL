@@ -25,7 +25,12 @@ struct Block
     int start_address;
     vector <int> parent;
     int com_num;
-    bool checked = false;
+    bool checked;
+
+    Block()
+    {
+        com_num=0;
+    }
 };
 
 struct Program
@@ -33,6 +38,10 @@ struct Program
     vector<string> program;
     Block program_block[100];
     int block_num;
+    Program()
+    {
+        block_num = 0;
+    }
 };
 
 void record_block_parents(struct Program* prog)
@@ -243,6 +252,10 @@ unordered_set <int> allocated_reg;
 unordered_set <int> allocated_block;
 
 void liveness_add(Program* prog, Block *block, command *pre_com, int now_block_id, int now_live_id, int now_var, int end_block_id, int end_com_id) {
+
+
+    // cout<<"Debug: "<<now_block_id<<" "<<now_live_id<<" "<<now_var<<endl;
+
     if(!pre_com->def.count(now_var) && !((now_block_id == end_block_id) && (now_live_id == end_com_id))) {
         if(!pre_com->liveness.count(now_var))
             pre_com->liveness.insert(now_var);
@@ -264,6 +277,8 @@ void liveness_add(Program* prog, Block *block, command *pre_com, int now_block_i
 
 void liveness_gen(struct Program* prog, int now_block_id, int now_com_id) {
     
+    
+
     Block *now_block = &(prog->program_block[now_block_id]);
     command *now_com = &(now_block->program[now_com_id - 1]);
     command *pre_com  = new command;
@@ -309,37 +324,38 @@ void liveness_gen(struct Program* prog, int now_block_id, int now_com_id) {
 } 
 
 vector<int> wrong;
-
+int place = 0;
 struct Program* rewrite_program(struct Program* prog)
 {
     struct Program* new_prog = new struct Program;
-    
-    int place = 16;
+
+    for (int j = 0; j < wrong.size(); ++j)
+    {
+        if(wrong[j])
+        {
+            place += 16;
+            wrong[j]=place;
+        }
+    }    
+
     for (int i = 0; i < prog->block_num; i++)
     {
         new_prog->program.push_back("Block " + to_string(i));
         struct Block temp_block = prog->program_block[i];
+        
+        
         for (int j = 0; j < temp_block.com_num; j++)
         {
             struct command temp_com = temp_block.program[j];
             for (int var : temp_com.use)
             {
-                if (wrong[var] && wrong[var] != 1)
-                {
-                    place = wrong[var];
-                    new_prog->program.push_back("#" + to_string(var) + " = *(%rbp - " + to_string(place) + ")");
-                }
+                if (wrong[var])
+                    new_prog->program.push_back("#" + to_string(var) + " = *(%rbp - " + to_string(wrong[var]) + ")");
             }
             new_prog->program.push_back(temp_com.com_str);
             for (int var : temp_com.def)
             {
-                if (wrong[var] && wrong[var] == 1)
-                {
-                    new_prog->program.push_back("*(%rbp - " + to_string(place) + ") = #" + to_string(var));
-                    wrong[var] = place;
-                    place += 16;
-                }
-                else if(wrong[var])
+                if (wrong[var])
                     new_prog->program.push_back("*(%rbp - " + to_string(wrong[var]) + ") = #" + to_string(var));
             }
         }
@@ -358,7 +374,8 @@ int var_cnt;
 int reg_id[]={6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
 
 int * var_rg;
- 
+
+vector<bool> spilled;//一个变量不能被spill两次
 
 struct move_command
 {
@@ -627,7 +644,7 @@ bool allocate(int rg_cnt)
         //Spill
         for (i = 0; i < var_cnt; ++ i)
         {
-            if(!removed[i])
+            if(!removed[i] && !spilled[i])
             {
                 cout<<"spill #"<<i<<endl; 
                 removed[i] = true;
@@ -819,7 +836,7 @@ void assemble_gen_print(command *com) {
 void assemble_gen(Program* prog) {
     for(int block_id = 0; block_id < prog->block_num; block_id++) {
         cout<<"Block "<<block_id<<":"<<endl;
-        for(int com_id = 0; com_id < prog->program_block[block_id].com_num - 1; com_id++) {
+        for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
             command *com = &(prog->program_block[block_id].program[com_id]);
             cout<<com->com_str<<": ";
             assemble_gen_print(com);
@@ -830,6 +847,7 @@ void assemble_gen(Program* prog) {
 
 int main()
 {
+    freopen("res.txt", "w", stdout);
     Program *prog = new Program;
     Program *tmp_prog=NULL;
     ifstream ifs;
@@ -889,36 +907,36 @@ int main()
         int end_com_id = prog->program_block[end_block_id].com_num;
         liveness_gen(prog, end_block_id, end_com_id);
 
-        // for(int block_id = 0; block_id < prog->block_num; block_id++) {
-        //     cout<<"Block "<<block_id<<":"<<endl;
-        //     for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {2
-        //         command myCommand = prog->program_block[block_id].program[com_id];
-        //         cout<<myCommand.com_str<<endl;
+        for(int block_id = 0; block_id < prog->block_num; block_id++) {
+            cout<<"Block "<<block_id<<":"<<endl;
+            for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
+                command myCommand = prog->program_block[block_id].program[com_id];
+                cout<<myCommand.com_str<<endl;
 
-        //         cout << "def: ";
-        //         for (int var : myCommand.def)
-        //         {
-        //             cout << "#" << var << ' ';
-        //         }
-        //         cout << "use: ";
-        //         for (int var : myCommand.use)
-        //         {
-        //             cout << "#" << var << ' ';
-        //         }
-        //         cout << "liveness: ";
-        //         for (int var : myCommand.liveness)
-        //         {
-        //             cout << "#" << var << ' ';
-        //         }
-        //         cout << endl << endl;
-        //     }
-        // }
+                cout << "def: ";
+                for (int var : myCommand.def)
+                {
+                    cout << "#" << var << ' ';
+                }
+                cout << "use: ";
+                for (int var : myCommand.use)
+                {
+                    cout << "#" << var << ' ';
+                }
+                cout << "liveness: ";
+                for (int var : myCommand.liveness)
+                {
+                    cout << "#" << var << ' ';
+                }
+                cout << endl << endl;
+            }
+        }
 
         var_cnt = 0;
 
         for(int block_id = 0; block_id < prog->block_num; block_id++) {
             cout<<"Block "<<block_id<<":"<<endl;
-            cout<<"Com: "<<prog->program_block[block_id].com_num<<endl;
+            // cout<<"Com: "<<prog->program_block[block_id].com_num<<endl;
             for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
                 command myCommand = prog->program_block[block_id].program[com_id];
                 cout<<myCommand.com_str<<endl;
@@ -948,6 +966,8 @@ int main()
             }
         }
         var_cnt ++;
+        for(int i = 0; i < var_cnt; ++i)
+            spilled.push_back(0);
         // cout<<var_cnt<<endl;
         interference_graph = new bool[var_cnt * var_cnt];
         degree = new int[var_cnt];
@@ -972,7 +992,7 @@ int main()
             }
         }
         del_useless_move();
-        int rg_cnt = 7;
+        int rg_cnt = 2;
         rg_choices = new bool[rg_cnt];
 
         ok = allocate(rg_cnt);
@@ -980,13 +1000,27 @@ int main()
             break;
         else
         {
+            bool possible = false;
+            for(int vv = 0; vv<var_cnt; ++vv)
+            {
+                if(spilled[vv] = 0)
+                    possible=true;
+            }
+            if (!possible)
+            {
+                cout<<"The number of registers are not enough! Impossible to allocate!\n";
+                return 0;
+            }
             wrong.clear();
             for(int vv = 0; vv<var_cnt; ++vv)
             {
                 if(var_rg[vv]!=-1)
                     wrong.push_back(0);
                 else
+                {
                     wrong.push_back(1);
+                    spilled[vv]=1;
+                }
             }
             
             // delete []interference_graph;
@@ -1009,10 +1043,10 @@ int main()
     while(ok != true);
 
     for(int block_id = 0; block_id < prog->block_num; block_id++) {
-        for(int com_id = 0; com_id < prog->program_block[block_id].com_num - 1; com_id++) {
+        for(int com_id = 0; com_id < prog->program_block[block_id].com_num ; com_id++) {
             command *myCommand = &(prog->program_block[block_id].program[com_id]);
             get_op(myCommand);
-            if(com_id == prog->program_block[block_id].com_num - 2 && com_id != 0)
+            if(com_id == prog->program_block[block_id].com_num - 1 && com_id != 0)
                 myCommand->func = JAL;
         }
     }
