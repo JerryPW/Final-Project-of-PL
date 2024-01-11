@@ -173,7 +173,7 @@ void check_block(struct Program* prog)
     {
         Block b = prog->program_block[i];
         cout << "Block: " << i << endl;
-        for (int j = 0; j <= b.com_num; j++)
+        for (int j = 0; j < b.com_num; j++)
             cout << b.program[j].com_str << endl;
     }
 }
@@ -319,7 +319,7 @@ struct Program* rewrite_program(struct Program* prog)
     {
         new_prog->program.push_back("Block " + to_string(i));
         struct Block temp_block = prog->program_block[i];
-        for (int j = 0; j <=temp_block.com_num; j++)
+        for (int j = 0; j < temp_block.com_num; j++)
         {
             struct command temp_com = temp_block.program[j];
             for (int var : temp_com.use)
@@ -877,7 +877,7 @@ int main()
         check_block(prog);
 
         for(int block_id = 0; block_id < prog->block_num; block_id++) {
-            for(int com_id = 0; com_id < prog->program_block[block_id].com_num - 1; com_id++) {
+            for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
                 command *myCommand = &(prog->program_block[block_id].program[com_id]);
                 use_def_calculate(myCommand);
             }
@@ -918,7 +918,7 @@ int main()
 
         for(int block_id = 0; block_id < prog->block_num; block_id++) {
             cout<<"Block "<<block_id<<":"<<endl;
-            // cout<<(prog->program_block[block_id].com_num - 1)<<endl;
+            cout<<"Com: "<<prog->program_block[block_id].com_num<<endl;
             for(int com_id = 0; com_id < prog->program_block[block_id].com_num; com_id++) {
                 command myCommand = prog->program_block[block_id].program[com_id];
                 cout<<myCommand.com_str<<endl;
@@ -972,7 +972,7 @@ int main()
             }
         }
         del_useless_move();
-        int rg_cnt = 4;
+        int rg_cnt = 7;
         rg_choices = new bool[rg_cnt];
 
         ok = allocate(rg_cnt);
