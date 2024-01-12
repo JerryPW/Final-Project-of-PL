@@ -14,6 +14,7 @@
 * 基本指针运算：```DEREF```
 * 基本运行语句：顺序执行语句，赋值语句，IF分支条件，WHILE语句，SKIP
 * 基本控制流：```continue```, ```break```
+* 基本系统调用：```read_int()```, ```write_int()```
 
 ## 如何使用
 * 主程序为```backend_complier.cpp```，待分配程序以```output.txt```文档的形式给出，直接编译运行```backend_complier.cpp```即可对```output.txt```内的程序进行寄存器分配
