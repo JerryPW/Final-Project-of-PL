@@ -1,0 +1,255 @@
+Block 0:
+#0 = read_int() 
+liveness: 
+
+#1 = $(1)
+liveness: #0 
+
+#2 = $(0)
+liveness: #1 #0 
+
+#5 = read_int() 
+liveness: #1 #2 #0 
+
+#6 = read_int() 
+liveness: #1 #2 #5 #0 
+
+#7 = read_int() 
+liveness: #5 #0 #2 #1 #6 
+
+#8 = read_int() 
+liveness: #5 #7 #0 #2 #1 #6 
+
+jmp 1
+liveness: #5 #7 #6 #0 #2 #8 #1 
+
+Block 1:
+if (GT(#0, $(0))) then jmp 2 else jmp 3
+liveness: #5 #7 #6 #0 #2 #8 #1 
+
+Block 2:
+#9 = MUL(#1, #5) 
+liveness: #7 #6 #8 #1 #5 #0 #2 
+
+#10 = MUL(#2, #7) 
+liveness: #9 #6 #1 #2 #7 #0 #8 
+
+#3 = PLUS(#9, #10) 
+liveness: #6 #1 #8 #9 #10 #0 #2 
+
+#11 = MUL(#1, #6) 
+liveness: #8 #2 #1 #6 #0 #3 
+
+#12 = MUL(#2, #8) 
+liveness: #2 #8 #3 #11 #0 
+
+#4 = PLUS(#11, #12) 
+liveness: #3 #0 #12 #11 
+
+#1 = #3
+liveness: #4 #0 #3 
+
+#2 = #4
+liveness: #0 #4 
+
+#0 = MINUS(#0, $(1)) 
+liveness: #0 
+
+Useable Registers' number: 7
+simplify #5
+simplify #7
+simplify #9
+simplify #1
+simplify #6
+simplify #3
+simplify #0
+simplify #8
+simplify #10
+simplify #11
+simplify #12
+Can not simplify anymore.
+Coalesce: #2 <= #4
+simplify #2
+Reg info: #0 <- X9
+Reg info: #1 <- X20
+Reg info: #2 <- X5
+Reg info: #3 <- X18
+Reg info: #4 <- X5
+Reg info: #5 <- X18
+Reg info: #6 <- X19
+Reg info: #7 <- X6
+Reg info: #8 <- X7
+Reg info: #9 <- X18
+Reg info: #10 <- X6
+Reg info: #11 <- X6
+Reg info: #12 <- X5
+add x28, x9, x0
+add x29, x18, x0
+add x30, x19, x0
+add x31, x20, x0
+sb x21, -176(%rbp)
+sb x22, -192(%rbp)
+sb x23, -208(%rbp)
+sb x24, -224(%rbp)
+sb x25, -240(%rbp)
+sb x26, -256(%rbp)
+sb x27, -272(%rbp)
+Block 0:
+#0 = read_int()  : 
+add x9, x1, x0
+add x18, x10, x0
+add x19, x11, x0
+add x20, x12, x0
+add x21, x13, x0
+add x22, x14, x0
+add x23, x15, x0
+add x24, x16, x0
+add x25, x17, x0
+jal read_int
+add x9, x0, x1
+add x1, x9, x0
+add x10, x18, x0
+add x11, x19, x0
+add x12, x20, x0
+add x13, x21, x0
+add x14, x22, x0
+add x15, x23, x0
+add x16, x24, x0
+add x17, x25, x0
+#1 = $(1) : 
+add x20, x0, #1
+#2 = $(0) : 
+add x5, x0, #0
+#5 = read_int()  : 
+add x18, x5, x0
+add x19, x1, x0
+add x21, x10, x0
+add x22, x11, x0
+add x23, x12, x0
+add x24, x13, x0
+add x25, x14, x0
+add x26, x15, x0
+add x27, x16, x0
+sb x17, -16(%rbp)
+jal read_int
+add x18, x0, x1
+add x5, x18, x0
+add x1, x19, x0
+add x10, x21, x0
+add x11, x22, x0
+add x12, x23, x0
+add x13, x24, x0
+add x14, x25, x0
+add x15, x26, x0
+add x16, x27, x0
+lb x17, -16(%rbp)
+#6 = read_int()  : 
+add x19, x5, x0
+add x21, x1, x0
+add x22, x10, x0
+add x23, x11, x0
+add x24, x12, x0
+add x25, x13, x0
+add x26, x14, x0
+add x27, x15, x0
+sb x16, -32(%rbp)
+sb x17, -48(%rbp)
+jal read_int
+add x19, x0, x1
+add x5, x19, x0
+add x1, x21, x0
+add x10, x22, x0
+add x11, x23, x0
+add x12, x24, x0
+add x13, x25, x0
+add x14, x26, x0
+add x15, x27, x0
+lb x16, -32(%rbp)
+lb x17, -48(%rbp)
+#7 = read_int()  : 
+add x21, x5, x0
+add x22, x1, x0
+add x23, x10, x0
+add x24, x11, x0
+add x25, x12, x0
+add x26, x13, x0
+add x27, x14, x0
+sb x15, -64(%rbp)
+sb x16, -80(%rbp)
+sb x17, -96(%rbp)
+jal read_int
+add x6, x0, x1
+add x5, x21, x0
+add x1, x22, x0
+add x10, x23, x0
+add x11, x24, x0
+add x12, x25, x0
+add x13, x26, x0
+add x14, x27, x0
+lb x15, -64(%rbp)
+lb x16, -80(%rbp)
+lb x17, -96(%rbp)
+#8 = read_int()  : 
+add x21, x5, x0
+add x22, x6, x0
+add x23, x1, x0
+add x24, x10, x0
+add x25, x11, x0
+add x26, x12, x0
+add x27, x13, x0
+sb x14, -112(%rbp)
+sb x15, -128(%rbp)
+sb x16, -144(%rbp)
+sb x17, -160(%rbp)
+jal read_int
+add x7, x0, x1
+add x5, x21, x0
+add x6, x22, x0
+add x1, x23, x0
+add x10, x24, x0
+add x11, x25, x0
+add x12, x26, x0
+add x13, x27, x0
+lb x14, -112(%rbp)
+lb x15, -128(%rbp)
+lb x16, -144(%rbp)
+lb x17, -160(%rbp)
+jmp 1 : 
+jal Block 1
+Block 1:
+if (GT(#0, $(0))) then jmp 2 else jmp 3 : 
+bgt x9, #0 Else
+jal Block 2
+Else:
+jal Block 3
+Block 2:
+#9 = MUL(#1, #5)  : 
+mul x18, x18, x20
+#10 = MUL(#2, #7)  : 
+mul x6, x6, x5
+#3 = PLUS(#9, #10)  : 
+add x18, x6, x18
+#11 = MUL(#1, #6)  : 
+mul x6, x19, x20
+#12 = MUL(#2, #8)  : 
+mul x5, x7, x5
+#4 = PLUS(#11, #12)  : 
+add x5, x5, x6
+#1 = #3 : 
+add x20, x18, x0
+#2 = #4 : 
+add x5, x5, x0
+#0 = MINUS(#0, $(1))  : 
+jal Block =
+Block 3:
+add x28, x9, x0
+add x29, x18, x0
+add x30, x19, x0
+add x31, x20, x0
+sb x21, -176(%rbp)
+sb x22, -192(%rbp)
+sb x23, -208(%rbp)
+sb x24, -224(%rbp)
+sb x25, -240(%rbp)
+sb x26, -256(%rbp)
+sb x27, -272(%rbp)

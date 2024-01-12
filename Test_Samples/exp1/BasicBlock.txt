@@ -1,0 +1,14 @@
+Block 0: 
+#3 = $(0) 
+#2 = read_int() 
+jmp 1 
+Block 1: 
+if (NE(#2, $(0))) then jmp 2 else jmp 3 
+Block 2: 
+#7 = #2 
+#8 = PLUS(#2, $(8)) 
+#2 = DEREF(#8) 
+#9 = PLUS(#7, $(8)) 
+* #9 = #3 
+#3 = #7 
+jmp 1 
