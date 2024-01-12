@@ -1,0 +1,19 @@
+var x;
+x = read_int();
+if (x)
+then {
+  while (x > 0) do {
+    x = x - 1
+  }
+}
+else {
+  if (x < 0)
+  then {
+    write_int(0)
+  }
+  else {
+    write_int(1)
+  }
+}
+
+
