@@ -20,8 +20,8 @@
 **考虑到接在给出的语法词法分析以及block信息结果之后，我们读取的时候需要严格按照用给定代码生成的block信息，如：常量1需要写出**```$(1),#2 = $(1)和if (GT(#0, $(0))) then jmp 2 else jmp 3```**和**```#0 = MINUS(#0, $(1))``` 
 
 ## 如何使用
-* 首先需要用给定的生成BasicBlock的程序，利用给定的代码生成BasicBlock。
-*  主程序为```backend_complier.cpp```，待分配程序以```BasicBlock.txt```文档的形式给出，直接编译运行```backend_complier.cpp```即可对```BasicBlock.txt```内的程序进行寄存器分配
+* 首先需要用给定的生成BasicBlock的程序，利用给定的代码生成BasicBlock。这部分代码由曹老师的```attachment1110```稍作修改得到，直接```make all```后把程序填入```sample.jtl```中运行```./main sample.jtl```就可以得到```BasicBlock.txt```。
+*  主程序为```backend_complier.cpp```，待分配程序以```BasicBlock.txt```文档的形式给出，直接编译运行```backend_complier.cpp```即可对```BasicBlock.txt```内的程序进行寄存器分配。
 * ```rg_cnt```维护了本次中寄存器可供分配的最大数量，修改```rg_cnt```的值可以改变寄存器分配的数量（具体在代码的第1257行）。最终liveness分析的过程，寄存器分配的过程以及最终的汇编代码都会输出到```result.txt```中。（在实际使用时，考虑到实际的体系结构，我们允许的最大可使用寄存器数目是18.）
 
 ## 各部分具体功能简介
