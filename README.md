@@ -8,3 +8,5 @@
 * 在考虑系统调用的函数情况下对caller与callee saved寄存器进行了处理
 
 ## 如何使用
+* 主程序为```backend_complier.cpp```，待分配程序以```output.txt```文档的形式给出，直接编译运行```backend_complier.cpp```即可对```output.txt```内的程序进行寄存器分配
+* 
