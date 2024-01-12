@@ -28,6 +28,6 @@
    * 针对caller-saved寄存器的分配，我们采用的策略是：首先在不考虑过程调用的情况下完成上述寄存器分配算法。随后，对于涉及过程调用的指令，我们根据该指令的liveness情况分析出此时此刻寄存器的使用情况。只有既是caller-saved又在此时被占用的寄存器需要备份，在此时空闲的callee-saved寄存器中选取对应数目的寄存器完成备份即可；如果寄存器数目不足则写入内存。在完成过程调用后再从这些地方对备份的寄存器进行恢复。
    * 而针对callee-saved寄存器的分配，则是再caller-saved寄存器的基础上完成的。在程序的一开始我们应当对所有的callee-saved寄存器进行备份（无法得知调用者的使用情况），在程序结束后对其进行恢复。额外统计一个全局寄存器使用情况，对callee-saved寄存器只能选择全程没有被使用过的寄存器。如果空间不足则使用内存进行备份。
    * 本次项目的寄存器规划如下图所示：
-     ![register_management](register_management.jpg)
+     ![register_management](register_manage.jpg)
 
 
